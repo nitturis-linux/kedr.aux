@@ -1,0 +1,96 @@
+#ifndef MY_TRACE_BUFFER_H
+#define MY_TRACE_BUFFER_H
+
+#include <linux/types.h>
+
+/*
+ * Struct, represented buffer which support two main operations:
+ *
+ * 1.Writting message into buffer
+ * 2.Extract the oldest message from the buffer.
+ *   If buffer is empty, may wait.
+ */
+
+struct trace_buffer;
+
+/*
+ * Allocate buffer.
+ * 
+ * 'size' is size of the buffer created.
+ * 'mode_overwrite' determine policy,
+ *  when size is overflowed while writting message:
+ *   if 'mode_overwrite' is 0, then newest message will be dropped.
+ *   otherwise the oldest message will be dropped.
+ */
+struct trace_buffer*
+trace_buffer_alloc(size_t size, bool mode_overwrite);
+/*
+ * Destroy buffer, free all resources which it used.
+ */
+void trace_buffer_destroy(struct trace_buffer* trace_buffer);
+
+/*
+ * Write message with data 'msg' of length 'size' to the buffer.
+ * May be called in the atomic context.
+ */
+void trace_buffer_write_message(struct trace_buffer* trace_buffer,
+    const void* msg, size_t size);
+
+/*
+ * Read the oldest message from the buffer, and consume it.
+ * 
+ * For message consumed call 'process_data':
+ * 'msg' is set to the pointer to the message data.
+ * 'size' is set to the size of the message,
+ * 'ts' is set to the timestamp of the message,
+ * 'user_data' is set to the 'user_data' parameter of the function.
+ * 
+ * Return value, which is returned by 'process_data'.
+ * 
+ * If buffer is empty, and should_wait is 0,
+ * return 0; otherwise wait until message will be available
+ * 
+ * If error occures, return negative error code.
+ * 
+ * Shouldn't be called in atomic context.
+ */
+int
+trace_buffer_read_message(struct trace_buffer* trace_buffer,
+    int (*process_data)(const void* msg, size_t size, int cpu, u64 ts, void* user_data),
+    int should_wait,
+    void* user_data);
+
+/*
+ * Return number of messages lost due to the buffer overflow.
+ */
+unsigned long
+trace_buffer_lost_messages(struct trace_buffer* trace_buffer);
+
+/*
+ * Reset trace in the buffer.
+ * 
+ * Return 0 on success, negative error code otherwise.
+ */
+int
+trace_buffer_reset(struct trace_buffer* trace_buffer);
+
+/*
+ * Return size of buffer in bytes.
+ */
+unsigned long
+trace_buffer_size(struct trace_buffer* trace_buffer);
+
+/*
+ * Change size of the buffer.
+ *
+ * Current messages in the buffer may be silently lost.
+ * (in current implementation buffer is forcibly reseted).
+ *
+ * Return new size on success, negative error code otherwise.
+ */
+
+int
+trace_buffer_resize(struct trace_buffer* trace_buffer,
+    unsigned long size);
+
+#endif
