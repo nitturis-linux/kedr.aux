@@ -1,0 +1,37 @@
+For collect statistic from one machine:
+
+./usage_kernel_functions.sh > results/<system_name>.txt
+
+It is better to not use whitespace in <system_name>.
+
+For join statistic from several machines into one file:
+
+./concatenate_statistics.pl results/*.txt > total_usage_statistic.txt
+
+For filter resulting statistics to exclude "not interesting" symbols
+and to join statistic for symbols, which really have same meaning:
+
+cat total_usage_statistic.txt | filter_table.pl exclude_functions.txt | join_synonyms.pl synonym_functions.txt > total_usage_statistic_processed.txt
+
+(NB) On some systems object files for modules are gzipped, and for purpose of preprocessing
+them are unzipped to the temporary file in the current directory.
+It is better to run scripts from the directory, where they are.
+
+For additional filtering functions, which are already covered(e.g, by call monitor payload modules):
+
+cat total_usage_statistic.txt | filter_table.pl exclude_functions.txt <kedr-dir>/sources/payloads_callm/*/covered_functions.txt | join_synonyms.pl synonym_functions.txt > not_covered.txt
+
+Auxiliary scripts:
+
+./imported_functions.pl <ko-file>
+
+Output list of kernel functions, used by module, representing by this file.
+
+./imported_functions_for_modules.pl <list of modules>
+
+Output list of functions, used by modules in the given list.
+
+./modules_list.pl
+
+Output list of modules, which is currently running.
+Similar to `lsmod` output, but only modules list.
