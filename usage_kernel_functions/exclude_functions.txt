@@ -1,0 +1,58 @@
+# Functions, which calls will not be controlled in the KEDR (in the near future).
+
+# With floating number of params
+printk
+sprintf
+snprintf
+seq_printf
+snd_iprintf
+# Simple string processing
+strlen
+strcpy
+strcmp
+simple_strtoul
+strlcpy
+strncmp
+# System variable
+jiffies
+# Variables for kmalloc functionality
+kmalloc_caches
+malloc_sizes
+# Something unknown
+__tracepoint_kmalloc
+# Something unknown
+__stack_chk_fail
+# Per cpu variables
+per_cpu__current_task
+per_cpu__cpu_number
+__per_cpu_offset
+# Used via macros, and it is difficult to make a mistake in using it.
+param_set_int
+param_get_int
+param_set_bool
+param_get_bool
+# Used for ftrace-design, should be implemented by hand, difficult to understand
+mcount
+# Nothing interesting - simple system-specific formulae
+msecs_to_jiffies
+# Variable(and struct type)
+pv_irq_ops
+#kernel panic functionality
+warn_slowpath_null
+warn_slowpath_fmt
+warn_on_slowpath
+#Function simply return string, describing driver.
+dev_driver_string
+# This functions accept parameters and return value via registers. So, using only c-code them couldn't be processed correctly.
+__put_user_1
+__put_user_2
+__put_user_4
+__put_user_8
+__get_user_1
+__get_user_2
+__get_user_4
+__get_user_8
+# This is real functions, but them used mainly as value of field in wait_queue_t struct.
+# With current controller implementation we cannot catch call to it. 
+default_wake_function
+autoremove_wake_function
